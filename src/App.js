@@ -1,9 +1,9 @@
-import logo from './logo.svg';
 import './App.css';
 import Webcam from 'react-webcam';
 import * as handpose from "@tensorflow-models/handpose";
 import * as tf from "@tensorflow/tfjs";
 import React, {useRef} from 'react';
+import { drawHand } from './util';
 
 function App() {
   const webcamRef = useRef(null);
@@ -14,28 +14,31 @@ function App() {
   console.log('its loaded');
   setInterval(() =>{
     detect(net)
-  },1000)
+  },100)
 };
 
-const detect = async(net) =>{
-  if(typeof webcamRef.current !== "undefined" &&
-  webcamRef.current !== null &&
-  webcamRef.current.video.readyState === 4){
+const detect = async (net) => {
+  if (
+    typeof webcamRef.current !== "undefined" &&
+    webcamRef.current !== null &&
+    webcamRef.current.video.readyState === 4
+  ) {
+    const video = webcamRef.current.video;
+    const videoWidth = webcamRef.current.video.videoWidth;
+    const videoHeight = webcamRef.current.video.videoHeight;
 
-  const video = webcamRef.current.video;
-  const videoWidth = webcamRef.current.video.videoWidth;
-  const videoHeight = webcamRef.current.videoHeight;
-  
-  webcamRef.current.video.width = videoWidth;
-  webcamRef.current.video.height = videoHeight;
+    webcamRef.current.video.width = videoWidth;
+    webcamRef.current.video.height = videoHeight;
 
-  canvasRef.current.width = videoWidth;
-  canvasRef.current.height = videoHeight;
-
-  const hand = await net.estimateHands(video);
-  console.log(hand);
+    canvasRef.current.width = videoWidth;
+    canvasRef.current.height = videoHeight;
+    const hand = await net.estimateHands(video);
+    console.log(hand);
+    const ctx = canvasRef.current.getContext("2d");
+    drawHand(hand, ctx);
   }
 };
+
  runHandpose();
 
   return (
@@ -43,6 +46,8 @@ const detect = async(net) =>{
       <header className="App-header">
       <Webcam
           ref={webcamRef}
+          audio={false}
+          forceScreenshotSourceSize="true"
           style={{
             position: "absolute",
             marginLeft: "auto",
@@ -51,8 +56,8 @@ const detect = async(net) =>{
             right: 0,
             textAlign: "center",
             zindex: 9,
-            width: 640,
-            height: 480,
+            width: 1000,
+            height: 800,
           }}
         />
 
@@ -66,8 +71,8 @@ const detect = async(net) =>{
             right: 0,
             textAlign: "center",
             zindex: 9,
-            width: 640,
-            height: 480,
+            width: 1000,
+            height: 800,
           }}
         />
 
